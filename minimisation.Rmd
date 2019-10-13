@@ -19,7 +19,7 @@ library(ggplot2)
 
 ## Dataset
 
-I assume that there are 3 strata, A, B, and C. A andC have two levels while B has 3. These levels are sampled with an equal probability in each stratum.
+I assume that there are 3 strata, A, B, and C. A and C have two levels while B has 3. These levels are sampled with an equal probability in each stratum.
 
 Treatment column which includes only NA is combined to complete the dataset.
 
