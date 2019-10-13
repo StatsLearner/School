@@ -3,6 +3,10 @@ title: "Minimisation"
 output: html_document
 ---
 
+## Introduction
+I heard "minimisation", which is one of randomising methods used in clinical trials. For details, take a look at https://en.wikipedia.org/wiki/Minimisation_(clinical_trials)
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
