@@ -3,75 +3,15 @@ title: "IntroBayesPractical2"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+### Comparison with frequentist inference in rare events
 
+#### Background
+Drug A and drug B are licensed for treating a particular disease. In the first 5,000 patients treated with A, there are 3 Adverse Events (AEs), while in the first 7,000 patients treated with B, there is only 1 adverse event.
 
-### 1. Beta-Binomial model
-
-
-```{r}
-# (a)
-x <- seq(0,1,0.01)
-plot(x,dbeta(x,0.5,0.5), type = "l")
-plot(x,dbeta(x,3.5,2.5), type = "l")
-```
-
-```{r}
-# (b)
-qbeta(p = 0.975, shape1 = 3.5, shape2 = 2.5)
-qbeta(p = 0.025, shape1 = 3.5, shape2 = 2.5)
-```
-
-```{r}
-# (c)
-l <-pbeta(q = 0.1, shape1 = 3.5, shape2 = 2.5)
-u <- pbeta(q = 0.25, shape1 = 3.5, shape2 = 2.5)
-u - l
-
-```
-
-### 2. Two-phase analysis of a clinical trial
-
-```{r}
-x <- seq(0,1,0.01)
-plot(x,dbeta(x,2,10) , type = "l")
-```
-
-```{r}
-# (b)
-x <- seq(0,1,0.01)
-plot(x,dbeta(x,6,46) , type = "l")
-```
-
-
-```{r}
-# (c)
-pbeta(q = 0.1, shape1 = 2, shape2 = 10)
-```
-
-```{r}
-# (d)
-pbeta(q = 0.1, shape1 = 6, shape2 = 46)
-```
-
-```{r}
-# (e)
-pbeta(q = 0.1, shape1 = 7, shape2 = 55)
-
-```
-
-```{r}
-# (f)
-pbeta(q = 0.1, shape1 = 7, shape2 = 55)
-x <- seq(0,1,0.01)
-plot(x,dbeta(x,7,55), type = "l")
-```
-
-### 3. Comparison with frequentist inference in rare events
-
-```{r}
+#### Posterior distributions with different prioirs
+* (a) Starting from a uniform prior, obtain the posterior for the probability of an AE for drug A and drug B.
+* (b) Now do the same, but use a Beta(0.00001,0.00001) prior.
+```{r message=FALSE}
 # (a), (b)
 require(ggplot2)
 x <- seq(0,0.001,0.00001)
@@ -79,15 +19,20 @@ d <- data.frame(x = x, post1 = dbeta(x,4,4998), post2 = dbeta(x,3+0.00001,4997+0
 ggplot(d,aes(x = x)) + geom_line(aes(y = post1, colour = "flat prior")) + geom_line(aes(y = post2, colour = "approx beta(0,0) prior")) + labs(y = "Posterior probability")
 ```
 
+
+#### Bayesian: calculate probability of parameter difference
+Now suppose we have to advise on whether drug B is safer than drug A, in other words Pr($\theta$_{B} < $\theta$_{A}| data ).
+
 ```{r}
-# (c)
-theta.A <- rbeta(1e6, 3, 4997)
+# (c) note that the the paramters of Beta(0.00001,0.00001) prior are effectively 0
+theta.A <- rbeta(1e6, 3, 4997) 
 theta.B <- rbeta(1e6, 1, 6999)
 theta.diff <- theta.B - theta.A
-sum(theta.diff < 0) / length(theta.diff)
+sum(theta.diff < 0) / length(theta.diff) 
 ```
 
 
+This may be inappropriate to do in Bayesian framework, but I make the sampling distribution of the proportions obtained. Sine the sample sizes are enormously large, the sampleing distribtuion is very narrow and it is likely not to be needed.
 ```{r}
 prop <- NULL
 for (i in 1:100) {
@@ -101,16 +46,7 @@ prop <- data.frame(prop = prop)
 ggplot(prop, aes(x = prop)) + geom_histogram(aes( y = ..density..), binwidth = 0.0001)
 ```
 
-
-```{r}
-quantile(theta.diff, probs = 0.9)
-plot(density(theta.diff), main = "Density plot of difference between ParamA and ParamB")
-abline(v = quantile(theta.diff, probs = 0.9), col = "red", lty = 3)
-text(0.0004, 800,"90% line", col = "red")
-text(0.001,1200, "DrugB has more events →", col = "gray", cex = 0.8)
-```
-
-
+See the two density functions of the beta distributions.
 ```{r}
 x <- seq(0,0.004,0.00001)
 plot(x,dbeta(x, 3,4997), type = "l",
@@ -120,10 +56,23 @@ legend(0.003,1300, legend = c("Beta(3,4997)","Beta(1,6999)"),
        col = c("black","red"), lty = 1:1, cex = 0.8, box.lty = 0)
 ```
 
+Obtained the one-sided Bayesian interval of the difference of the two parameters. At least 90% propability that DrugB is safer than DrugA.
+```{r}
+quantile(theta.diff, probs = 0.9)
+plot(density(theta.diff), main = "Density plot of difference between ParamA and ParamB")
+abline(v = quantile(theta.diff, probs = 0.9), col = "red", lty = 3)
+text(0.0004, 800,"90% line", col = "red")
+text(0.001,1200, "DrugB has more events →", col = "gray", cex = 0.6)
+```
+
+
+
+#### Frequentist: calculate probability of parameter difference
+
+In a frequentist way, it is needed to estimate the difference of the two parameters as a new parameter.$\theta_{B-A} = 0$ is the null hypothesis. If asssuming quadratic approximation to the true log-likelihood ratio and asymptotic chi-square approximation to the quadratic statistic, the SE of the MLE are calculated.
 
 ```{r}
-# Frequentist approach
-
+# MLE
 diff.mle <- (1/7000) - (3/5000) # the MLE of proportions in binomial
 diff.se <- sqrt(1*6999/7000^3 + 3*4997/5000^3) # SE of the MLE of proportions in binomial
 pnorm(0, diff.mle, diff.se) # the probability of mle difference is smaller than 0
@@ -132,7 +81,7 @@ diff.mle + 1.28 * diff.se # wald 90% one-sided CI
 
 ```
 
-
+A plot showing the results of the two approach is depicted below.
 ```{r}
 x <- seq(-0.004, 0.002, length = 1000)
 plot(density(theta.diff), main = "Density plot of difference between ParamA and ParamB", ylim = c(0,1500))
@@ -141,8 +90,8 @@ abline(v = quantile(theta.diff, probs = 0.9), lty = 3)
 abline(v = diff.mle + 1.28 * diff.se, col = "red", lty = 3)
 text(-0.0001, 1300,"Bayesian 90% line", cex = 0.8, adj = 1) #adj = 1 alighns text right
 text(0.0002, 500,"MLE 90% line", col = "red", cex = 0.8, adj = 0) #adj = 0 alighns text left
-text(0.0012,1500, "DrugB has more events →", col = "grey", cex = 0.6)
-legend(-0.004, 300, legend = c("Bayesian", "Frequentist(MLE)"), 
+text(0.0009,1500, "DrugB has more events →", col = "grey", cex = 0.6)
+legend(-0.0035, 500, legend = c("Bayesian", "Frequentist(MLE)"), 
        col = c("black", "red"), lty = 1:1, 
        box.lty = 0, cex = 0.8, text.col = "grey30")
 ```
