@@ -112,5 +112,6 @@ confint(fit_x)
 
 ### Method2
 #P-value and CIs are different... Dont know why
-summary(glht(fit4, linfct = mcp(druglab = "Tukey"))) 
-confint(glht(fit4, linfct = mcp(druglab = "Tukey")))
+K <- matrix(c(0,-1,1,0),1)
+summary(glht(fit4, linfct = K))
+confint(glht(fit4, linfct = K))
