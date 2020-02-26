@@ -58,6 +58,7 @@ list(model1 = coef(fit1)[1], model2 = coef(fit2)[2])
 
 #### Exercise 5 ####
 # mixed effects model
+# default is REML
 fit3 <- lmer(gcse ~ lrt + (1|school), data = d[d$school!=48,])
 summary(fit3)
 
@@ -147,22 +148,23 @@ summary(ranef(fit6)$school)
 # predicted random intercepts and coefficients
 ranef(fit6)$school[48,]
 
-# school level intercept residuals
+# school level intercept residuals (not standardised)
 r_int<- ranef(fit6)$school$`(Intercept)`
 qqnorm(r_int)
 qqline(r_int)
 
-# school level slope residuals
+# school level slope residuals (not standardised)
 r_slope<- ranef(fit6)$school$lrt
 qqnorm(r_slope)
 qqline(r_slope)
 
-# summary of level 1 resisuals
+# summary of level 1 resisuals (not standardised)
 summary(summary(fit6)$residuals)
 
 # the level 1 residuals for school 48
 summary(fit6)$residuals[d$school==48]
 
+## HOW CAN I GET THE STANDARDISED RESIDUALS?? ##
 
 # just for fun
 ## the variability in the mixed gender group
