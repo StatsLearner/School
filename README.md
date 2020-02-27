@@ -1,2 +1,2 @@
-# R markdowns
-Thi is my first repo to use. I mainly use R and will probably upload random r markdowns or r scripts.
+# School codes
+Store some of my R codes to practice what I learn in MSc.
